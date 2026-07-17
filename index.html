@@ -683,25 +683,47 @@ button:hover{background:#eef1f8;border-color:#cfd7e8}
 .compare-toggle .chev{transition:transform .2s ease;color:var(--ink-faint)}
 .compare-toggle.open .chev{transform:rotate(180deg)}
 
-.compare-panel{
-  margin-top:14px;
-  display:none;
-  grid-template-columns:repeat(3, 1fr);
-  gap:10px;
+.compare-backdrop{
+  position:fixed; inset:0; background:rgba(12,16,28,.5);
+  backdrop-filter:blur(2px);
+  display:none; align-items:center; justify-content:center;
+  z-index:500; padding:24px;
 }
-.compare-panel.open{display:grid}
-@media(max-width:1080px){ .compare-panel{grid-template-columns:repeat(2,1fr)} }
-@media(max-width:520px){ .compare-panel{grid-template-columns:1fr} }
+.compare-backdrop.open{display:flex}
+.compare-modal{
+  background:var(--paper); border-radius:18px; max-width:640px; width:100%;
+  max-height:80vh; overflow:hidden; display:flex; flex-direction:column;
+  box-shadow:0 24px 60px rgba(10,14,26,.35);
+}
+.compare-modal-hd{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 20px; border-bottom:1px solid var(--line); flex-shrink:0;
+}
+.compare-modal-hd h2{font-size:15px; margin:0}
+.compare-modal-close{
+  width:28px; height:28px; border-radius:50%; border:none; background:var(--bg);
+  color:var(--ink-faint); cursor:pointer; display:flex; align-items:center; justify-content:center;
+  transition:background .15s, color .15s;
+}
+.compare-modal-close:hover{background:#e7ebf3; color:var(--ink)}
+.compare-modal-body{padding:16px 20px 20px; overflow-y:auto}
+
+.compare-panel{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:8px;
+}
+@media(max-width:520px){ .compare-panel{grid-template-columns:repeat(2,1fr)} }
 
 .compare-card{
   border:1px solid var(--line);
-  border-radius:16px;
-  padding:12px;
+  border-radius:12px;
+  padding:9px;
   cursor:pointer;
   background:var(--bg);
   transition:border-color .15s ease, background .15s ease, transform .2s ease, box-shadow .2s ease;
 }
-.compare-card:hover{border-color:#c7d1e6; transform:translateY(-3px); box-shadow:0 10px 22px rgba(16,23,42,.10)}
+.compare-card:hover{border-color:#c7d1e6; transform:translateY(-2px); box-shadow:0 6px 16px rgba(16,23,42,.1)}
 .compare-card svg{overflow:visible}
 .compare-card .thumb-arrow{transform-box:fill-box; transform-origin:center}
 .compare-card:hover .thumb-arrow{animation:thumbPulse .9s ease-in-out infinite}
@@ -709,18 +731,18 @@ button:hover{background:#eef1f8;border-color:#cfd7e8}
 .compare-card.active{
   background:var(--paper);
   border-color:var(--ink);
-  box-shadow:0 1px 2px rgba(16,23,42,.06), 0 10px 22px rgba(16,23,42,.08);
+  box-shadow:0 1px 2px rgba(16,23,42,.06), 0 6px 16px rgba(16,23,42,.08);
 }
 .compare-card svg{width:100%;height:auto;display:block}
 .compare-card .name{
-  margin-top:8px;
-  font-size:12.5px;
+  margin-top:6px;
+  font-size:11px;
   font-weight:800;
   color:var(--ink);
 }
 .compare-card .desc{
   margin-top:2px;
-  font-size:11px;
+  font-size:9.5px;
   color:var(--ink-faint);
   line-height:1.4;
 }
@@ -1126,7 +1148,6 @@ button:hover{background:#eef1f8;border-color:#cfd7e8}
   <div class="page active" id="page1">
     <header class="header">
       <div class="brand">
-        <div class="logo">EQ</div>
         <div>
           <h1>Fault mechanism</h1>
           <div class="subtitle">Set the fault type and watch strike, dip, and rake update on the 3D block diagram in real time. Hit play to see the hanging wall slip.</div>
@@ -1287,13 +1308,6 @@ button:hover{background:#eef1f8;border-color:#cfd7e8}
         </div>
       </div>
 
-      <div class="quick">
-        <button onclick="setPreset('rightStrike')">Right strike-slip</button>
-        <button onclick="setPreset('normal')">Normal</button>
-        <button onclick="setPreset('reverse')">Reverse</button>
-        <button onclick="setPreset('obliqueReverse')">Oblique reverse</button>
-      </div>
-
       <div class="mini">
         <strong>Strict realistic</strong> keeps each mechanism in a narrow textbook range. <strong>Learning range</strong> widens the degree options while still avoiding unrealistic combinations.
       </div>
@@ -1305,13 +1319,18 @@ button:hover{background:#eef1f8;border-color:#cfd7e8}
     </aside>
   </div>
 
-  <div class="card" id="compareCard" style="display:none">
-    <div class="side" style="padding:18px">
-      <div class="side-top" style="margin-bottom:8px">
+  <div class="compare-backdrop" id="compareBackdrop">
+    <div class="compare-modal" id="compareModal">
+      <div class="compare-modal-hd">
         <h2>Side by side</h2>
-        <div class="tag" style="background:var(--bg)">Click any card to load it above</div>
+        <button class="compare-modal-close" id="compareCloseBtn" type="button" aria-label="Close">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        </button>
       </div>
-      <div class="compare-panel open" id="comparePanel"></div>
+      <div class="compare-modal-body">
+        <div class="mini" style="margin-bottom:12px">Click any card to load it above.</div>
+        <div class="compare-panel" id="comparePanel"></div>
+      </div>
     </div>
   </div>
 
@@ -1906,7 +1925,8 @@ button:hover{background:#eef1f8;border-color:#cfd7e8}
 
   // ---------- comparison panel ----------
   const compareToggle = document.getElementById("compareToggle");
-  const compareCard = document.getElementById("compareCard");
+  const compareBackdrop = document.getElementById("compareBackdrop");
+  const compareCloseBtn = document.getElementById("compareCloseBtn");
   const comparePanel = document.getElementById("comparePanel");
 
   const MECH_ORDER = ["rightStrike","leftStrike","normal","reverse","obliqueNormal","obliqueReverse"];
@@ -1968,6 +1988,7 @@ button:hover{background:#eef1f8;border-color:#cfd7e8}
       card.addEventListener("click", function(){
         mechanismEl.value = key;
         if(mode !== "strict") setMode("strict"); else applyMechanism(true);
+        closeCompare();
       });
       comparePanel.appendChild(card);
     });
@@ -1980,12 +2001,25 @@ button:hover{background:#eef1f8;border-color:#cfd7e8}
   }
   buildComparePanel();
 
+  function openCompare(){
+    compareBackdrop.classList.add("open");
+    compareToggle.classList.add("open");
+    compareToggle.querySelector("span").textContent = "Hide comparison";
+  }
+  function closeCompare(){
+    compareBackdrop.classList.remove("open");
+    compareToggle.classList.remove("open");
+    compareToggle.querySelector("span").textContent = "Compare all six mechanisms";
+  }
   compareToggle.addEventListener("click", function(){
-    const open = compareCard.style.display === "none";
-    compareCard.style.display = open ? "block" : "none";
-    compareToggle.classList.toggle("open", open);
-    compareToggle.querySelector("span").textContent = open ? "Hide comparison" : "Compare all six mechanisms";
-    if(open) compareCard.scrollIntoView({behavior:"smooth", block:"nearest"});
+    if(compareBackdrop.classList.contains("open")) closeCompare(); else openCompare();
+  });
+  compareCloseBtn.addEventListener("click", closeCompare);
+  compareBackdrop.addEventListener("click", function(e){
+    if(e.target === compareBackdrop) closeCompare();
+  });
+  document.addEventListener("keydown", function(e){
+    if(e.key === "Escape" && compareBackdrop.classList.contains("open")) closeCompare();
   });
 
 
