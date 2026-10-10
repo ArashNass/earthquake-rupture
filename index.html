@@ -1090,6 +1090,10 @@ button:hover{background:#eef1f8;border-color:#cfd7e8}
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Fault Mechanism 3D Model - Strike, Dip &amp; Rake | Arash Nassirpour">
 <meta name="twitter:description" content="Explore earthquake fault mechanisms in 3D. Adjust strike, dip and rake, animate slip, and compare strike-slip, normal, reverse and oblique faulting."><meta name="twitter:image" content="https://arashnassirpour.com/earthquake-rupture/og-image.png">
+<style>
+/* phones: 16px form fields stop iOS Safari zooming the page in when one is tapped */
+@media (max-width:760px){input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=file]),select,textarea{font-size:16px!important}}
+</style>
 </head>
 <body>
 <!-- shared site header -->
@@ -1472,6 +1476,21 @@ button:hover{background:#eef1f8;border-color:#cfd7e8}
   controls.minDistance = 5.0;
   controls.maxDistance = 13.5;
   controls.maxPolarAngle = Math.PI * .49;
+
+  // Touch devices: one finger scrolls the page, two fingers pinch-zoom/rotate the view.
+  // (OrbitControls cancels scrolling on every touch that starts inside the canvas, which trapped the page.)
+  if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) {
+    controls.enabled = false;
+    controls.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_ROTATE };
+    const touchCanvas = renderer.domElement;
+    touchCanvas.style.touchAction = 'pan-x pan-y';
+    touchCanvas.parentElement.addEventListener('touchstart', function (e) {
+      if (e.target === touchCanvas) controls.enabled = e.targetTouches.length >= 2;
+    }, { capture: true, passive: true });
+    const touchOff = function (e) { if (e.targetTouches.length < 2) setTimeout(function () { controls.enabled = false; }, 0); };
+    touchCanvas.addEventListener('touchend', touchOff, { passive: true });
+    touchCanvas.addEventListener('touchcancel', touchOff, { passive: true });
+  }
 
   const ambient = new THREE.AmbientLight(0xffffff, .92);
   scene.add(ambient);
