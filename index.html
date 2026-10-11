@@ -642,6 +642,15 @@ button:hover{background:#eef1f8;border-color:#cfd7e8}
 }
 .cam-btn:hover{background:var(--paper);color:var(--ink)}
 .cam-btn.active{background:var(--ink);border-color:var(--ink);color:#fff}
+/* phones: the overlay must wrap, or the Style readout and the Top/Side camera buttons fall off the right edge */
+@media(max-width:560px){
+  .viewer-topbar{display:block;padding:10px}
+  .scene-label{display:none}
+  .kpi-row{gap:6px}
+  .kpi{flex:1 1 0;min-width:0;padding:6px;text-align:center}
+  .kpi .k{font-size:9px;letter-spacing:.04em}
+  .kpi .v{font-size:13px}
+}
 
 /* ---------- copy / share row ---------- */
 .copy-row{display:flex;gap:8px;margin-top:12px}
@@ -1821,6 +1830,8 @@ button:hover{background:#eef1f8;border-color:#cfd7e8}
     const h = window.innerWidth < 680 ? 520 : 680;
     renderer.setSize(rect.width, h, false);
     camera.aspect = rect.width / h;
+    // keep the block in frame on narrow canvases: widen the vertical FOV so the horizontal FOV never drops below ~52deg (capped at 68deg vertical) (desktop stays at 42)
+    camera.fov = Math.max(42, Math.min(68, 2 * Math.atan(Math.tan(26 * Math.PI / 180) / camera.aspect) * 180 / Math.PI));
     camera.updateProjectionMatrix();
   }
 
