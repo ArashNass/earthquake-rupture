@@ -1079,8 +1079,7 @@ button:hover{background:#eef1f8;border-color:#cfd7e8}
 .app-footer-copy{color:var(--ink-soft);font-weight:600;margin-bottom:4px}
 </style>
 <!-- Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-0WERZ6WKQY"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-0WERZ6WKQY");</script>
+<script defer src="/assets/analytics.js?v=2"></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -1103,6 +1102,10 @@ button:hover{background:#eef1f8;border-color:#cfd7e8}
 /* phones: 16px form fields stop iOS Safari zooming the page in when one is tapped */
 @media (max-width:760px){input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=file]),select,textarea{font-size:16px!important}}
 </style>
+
+<script defer src="/assets/engagement.js?v=1"></script>
+<script type="module" src="/assets/vitals.js?v=1"></script>
+<link rel="stylesheet" href="/assets/tool-guide.css?v=1">
 </head>
 <body>
 <!-- shared site header -->
@@ -1253,7 +1256,7 @@ button:hover{background:#eef1f8;border-color:#cfd7e8}
           <div class="legend-item"><span class="swatch" style="background:var(--slip)"></span>Slip vector</div>
         </div>
         <div class="hint-row">
-          <button id="playBtn" class="play-btn" type="button">
+          <button id="playBtn" data-track-action="play_model" class="play-btn" type="button">
             <svg id="playIcon" width="11" height="11" viewBox="0 0 24 24"><path d="M6 4l15 8-15 8z" fill="currentColor"/></svg>
             <span id="playLabel">Play slip motion</span>
           </button>
@@ -1348,8 +1351,8 @@ button:hover{background:#eef1f8;border-color:#cfd7e8}
         </div>
 
         <div class="copy-row">
-          <button class="copy-btn" id="copyValuesBtn" type="button">Copy values</button>
-          <button class="copy-btn" id="copyLinkBtn" type="button">Copy link</button>
+          <button class="copy-btn" id="copyValuesBtn" data-track-action="copy_values" type="button">Copy values</button>
+          <button class="copy-btn" id="copyLinkBtn" data-track-action="share_requested" type="button">Copy link</button>
         </div>
       </div>
 
@@ -1357,7 +1360,7 @@ button:hover{background:#eef1f8;border-color:#cfd7e8}
         <strong>Strict realistic</strong> keeps each mechanism in a narrow textbook range. <strong>Learning range</strong> widens the degree options while still avoiding unrealistic combinations.
       </div>
 
-      <button class="compare-toggle" id="compareToggle" type="button">
+      <button class="compare-toggle" id="compareToggle" data-track-action="compare_mechanisms" type="button">
         <span>Compare all six mechanisms</span>
         <svg class="chev" width="11" height="11" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
@@ -1495,7 +1498,7 @@ button:hover{background:#eef1f8;border-color:#cfd7e8}
 
   const canvas = document.getElementById("viewer");
   const renderer = new THREE.WebGLRenderer({canvas:canvas, antialias:true, alpha:true});
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, matchMedia('(max-width: 600px)').matches ? 1.5 : 2));
   renderer.shadowMap.enabled = false;
 
   const scene = new THREE.Scene();
@@ -2085,7 +2088,10 @@ button:hover{background:#eef1f8;border-color:#cfd7e8}
   });
 
 
+  let platformSceneVisible = true;
+  if ('IntersectionObserver' in window) new IntersectionObserver(entries => { platformSceneVisible = entries[0].isIntersecting; }, {rootMargin:'100px'}).observe(renderer.domElement);
   function animate(){
+    if (document.hidden || !platformSceneVisible) { requestAnimationFrame(animate); return; }
     controls.update();
     if(camTween){
 
@@ -2108,6 +2114,7 @@ button:hover{background:#eef1f8;border-color:#cfd7e8}
   animate();
 })();
 </script>
+<section class="platform-guide" aria-labelledby="platform-guide-title"><h2 id="platform-guide-title">Using fault mechanism</h2><p>Explore how strike, dip and rake describe a fault plane and its slip direction in three dimensions. Rotate the model, animate slip and compare two mechanisms.</p><details><summary>Try a worked example</summary><ol><li>Start with the strike-slip preset and play the slip animation.</li><li>Switch to a normal-fault preset and compare the direction of motion.</li><li>Use the top and side views to separate the plane orientation from the slip direction.</li></ol></details><nav aria-label="Related tools"><a href="/world-faults/">World fault map</a><a href="/earthquake-dashboard/">Earthquake rapid response</a></nav></section>
 <footer class="site-ft"><style>
 .site-ft{background:#0f2350;border-top:1px solid rgba(255,255,255,.08);flex-shrink:0;line-height:normal;font-family:Inter,'Segoe UI',system-ui,sans-serif}
 .site-ft .ft-in{max-width:1080px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;padding:14px 24px}
